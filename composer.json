@@ -1,0 +1,35 @@
+{
+    "name"       : "jupitern/slim3-core",
+    "description": "",
+    "keywords"   : [""],
+    "homepage"   : "https://github.com/jupitern/slim3-core",
+    "license"    : "MIT",
+    "authors"    : [
+        {
+            "name"    : "Nuno Chaves",
+            "email"   : "nunochaves@sapo.pt",
+            "role"    : "Developer"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/jupitern/slim3-core",
+        "issues": "https://github.com/jupitern/slim3-core/issues"
+    },
+    "require"    :{
+        "php": ">=7.0",
+        "slim/slim": "3.12.*",
+        "psr/log": "1.1.*",
+        "monolog/monolog": "2.0.*",
+        "slashtrace/slashtrace": "1.1.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jupitern\\Slim3\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+
+        }
+    }
+}
