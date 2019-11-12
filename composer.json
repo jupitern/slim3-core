@@ -29,10 +29,5 @@
         "psr-4": {
             "Jupitern\\Slim3\\": "src/"
         }
-    },
-    "autoload-dev": {
-        "psr-4": {
-
-        }
     }
 }
