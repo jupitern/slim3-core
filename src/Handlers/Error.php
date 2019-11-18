@@ -25,14 +25,16 @@ final class Error extends \Slim\Handlers\Error
         $container = $app->getContainer();
 
         // Log the message
-        $msg = $exception->getMessage() .PHP_EOL. "line ". $exception->getLine() ." on ". $exception->getFile();
-        $app->resolve(LoggerInterface::class)->error($msg,[
+        $msg = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
+        $trace = preg_split('/\r\n|\r|\n/', $exception->getTraceAsString());
+
+        $app->resolve(LoggerInterface::class)->error($msg, [
+            "trace"   => implode(PHP_EOL, array_slice($trace, 0, 10)),
             "server"  => gethostname(),
             "user"    => array_key_exists('user', $container) ? [
                 "id" => $container["user"]->id,
                 "username" => $container["user"]->username,
             ] : "null",
-            "trace"   => array_slice($exception->getTrace(), 0, 5),
             "request" => [
                 "query"  => $request->getQueryParams(),
                 "body"   => $request->getBody(),

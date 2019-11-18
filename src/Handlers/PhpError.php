@@ -20,18 +20,20 @@ final class PhpError extends \Slim\Handlers\PhpError
 	 */
 	public function __invoke(Request $request, Response $response, \Throwable $error)
     {
-        $app = app();
+        $app       = app();
         $container = $app->getContainer();
 
         // Log the message
-        $msg = $error->getMessage() .PHP_EOL. "line ". $error->getLine() ." on ". $error->getFile();
+        $msg = $error->getMessage() .PHP_EOL. $error->getFile() .PHP_EOL. "on line ". $error->getLine();
+        $trace = preg_split('/\r\n|\r|\n/', PHP_EOL, $exception->getTraceAsString());
+
         $app->resolve(LoggerInterface::class)->error($msg,[
+            "trace"   => implode(PHP_EOL, array_slice($trace, 0, 10)),
             "server"  => gethostname(),
             "user"    => array_key_exists('user', $container) ? [
                 "id" => $container["user"]->id,
                 "username" => $container["user"]->username,
             ] : "null",
-            "trace"   => array_slice($error->getTrace(), 0, 5),
             "request" => [
                 "query"  => $request->getQueryParams(),
                 "body"   => $request->getBody(),

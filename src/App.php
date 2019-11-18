@@ -20,25 +20,25 @@ class App
 
 	/** @var \Slim\App */
 	private $slim = null;
-	private $settings = [];
+	private $configs = [];
 	private static $instance = null;
 
 
 	/**
 	 * @param string $appName
-	 * @param array $settings
+	 * @param array $configs
 	 */
-	protected function __construct($appName = '', $settings = [])
+	protected function __construct($appName = '', $configs = [])
 	{
         $this->appName = $appName;
-        $this->settings = $settings;
-        $this->slim = new \Slim\App($settings);
-        $this->env = $settings['settings']['env'];
+        $this->configs = $configs;
+        $this->slim = new \Slim\App($configs['slim']);
+        $this->env = $configs['env'];
         $container = $this->getContainer();
-        $displayErrorDetails = $settings['settings']['debug'];
+        $displayErrorDetails = $configs['debug'];
 
-        date_default_timezone_set($settings['settings']['timezone']);
-        \Locale::setDefault($settings['settings']['locale']);
+        date_default_timezone_set($configs['timezone']);
+        \Locale::setDefault($configs['locale']);
 
 		set_error_handler(function($errno, $errstr, $errfile, $errline) {
 			if (!($errno & error_reporting())) {
@@ -56,6 +56,7 @@ class App
             }
         });
 
+        // TODO comment this lines
 		$container[RequestInterface::class] = $container['request'];
 		$container[ResponseInterface::class] = $container['response'];
 
@@ -74,13 +75,13 @@ class App
 	 * Application Singleton Factory
 	 *
 	 * @param string $appName
-	 * @param array $settings
+	 * @param array $configs
 	 * @return static
 	 */
-	final public static function instance($appName = '', $settings = [])
+	final public static function instance($appName = '', $configs = [])
 	{
 		if (null === static::$instance) {
-			static::$instance = new static($appName, $settings);
+			static::$instance = new static($appName, $configs);
 		}
 
 		return static::$instance;
@@ -117,7 +118,7 @@ class App
 	 */
 	public function setConfig($param, $value)
 	{
-		$dn = new DotNotation($this->settings);
+		$dn = new DotNotation($this->configs);
 		$dn->set($param, $value);
 	}
 
@@ -131,7 +132,7 @@ class App
 	 */
 	public function getConfig($param, $defaultValue = null)
 	{
-		$dn = new DotNotation($this->settings);
+		$dn = new DotNotation($this->configs);
 		return $dn->get($param, $defaultValue);
 	}
 
@@ -143,13 +144,13 @@ class App
 	 */
 	public function registerProviders()
 	{
-	    $providers = (array)$this->getConfig('providers');
-	    array_walk($providers, function(&$appName, $provider) {
-	        if (strpos($appName, $this->appName) !== false) {
-                /** @var $provider \App\ServiceProviders\ProviderInterface */
-                $provider::register();
+	    $services = (array)$this->getConfig('services');
+
+	    foreach ($services as $serviceName => $service) {
+	        if (!isset($service['on']) || strpos($service['on'], $this->appName) !== false) {
+                $service['provider']::register($serviceName, $service['settings'] ?? []);
             }
-	    });
+        }
 	}
 
 
@@ -181,28 +182,39 @@ class App
 
 
     /**
+     * magic method to set a property of the app or insert something in the container
+     * @param $name
+     * @param $value
+     */
+    public function __set($name, $value)
+    {
+        if (property_exists($this,$name)) {
+            $this->slim->{$name} = $value;
+        } else {
+            $this->getContainer()[$name] = $value;
+        }
+    }
+
+
+    /**
+     * magic method to get a property of the App or resolve something from the container
      * @param $name
      * @return mixed
      * @throws \ReflectionException
      */
     public function __get($name)
 	{
-		$c = $this->getContainer();
+        if (property_exists($this,$name)) {
+            $this->slim->{$name} = $value;
+        } else {
+            $c = $this->getContainer();
 
-		if ($c->has($name)) {
-			return $c->get($name);
-		}
+            if ($c->has($name)) {
+                return $c->get($name);
+            }
+        }
+
 		return $this->resolve($name);
-	}
-
-
-    /**
-     * @param $k
-     * @param $v
-     */
-    public function __set($k, $v)
-	{
-		$this->slim->{$k} = $v;
 	}
 
 
@@ -231,10 +243,10 @@ class App
 	 */
 	public function url($url = '', $showIndex = null, $includeBaseUrl = true)
 	{
-		$baseUrl = $includeBaseUrl ? $this->getConfig('settings.baseUrl') : '';
+		$baseUrl = $includeBaseUrl ? $this->getConfig('baseUrl') : '';
 
 		$indexFile = '';
-		if ($showIndex || ($showIndex === null && (bool)$this->getConfig('settings.indexFile'))) {
+		if ($showIndex || ($showIndex === null && (bool)$this->getConfig('indexFile'))) {
 			$indexFile = 'index.php/';
 		}
 		if (strlen($url) > 0 && $url[0] == '/') {
@@ -271,32 +283,42 @@ class App
     /**
      * resolve and call a given class / method
      *
-     * @param string $namespace
-     * @param string $className
-     * @param string $methodName
-     * @param array $requestParams
+     * @param array $classMethod        [ClassNamespace, method]
+     * @param array $requestParams      params from url
+     * @param bool $useReflection
      * @return \Psr\Http\Message\ResponseInterface
      * @throws \ReflectionException
      */
-	public function resolveRoute($namespace = '\App\Http', $className, $methodName, $requestParams = [])
-	{
+    public function resolveRoute($classMethod, $requestParams = [], $useReflection = true)
+    {
+        try {
+            $className = $classMethod[0];
+            $methodName = $classMethod[1];
 
-		try {
-			$class = new \ReflectionClass($namespace.'\\'.$className);
+            if (!$useReflection) {
+                $controller = new $className;
+                $method = new \ReflectionMethod($controller, $methodName);
 
-			if (!$class->isInstantiable() || !$class->hasMethod($methodName)) {
-				throw new \ReflectionException("route class is not instantiable or method does not exist");
-			}
+            } else {
+                // adicional code to inject dependencies in controller class constructor
+                $class = new \ReflectionClass($className);
+                if (!$class->isInstantiable() || !$class->hasMethod($methodName)) {
+                    throw new \ReflectionException("route class is not instantiable or method does not exist");
+                }
+
+                $constructorArgs = $this->resolveMethodDependencies($class->getConstructor());
+                $controller = $class->newInstanceArgs($constructorArgs);
+
+                $method = $class->getMethod($methodName);
+            }
+
 		} catch (\ReflectionException $e) {
 			return $this->notFound();
-		}
+		} catch (\Error $e) {
+            return $this->notFound();
+        }
 
-		$constructorArgs = $this->resolveMethodDependencies($class->getConstructor());
-		$controller = $class->newInstanceArgs($constructorArgs);
-
-		$method = $class->getMethod($methodName);
 		$args = $this->resolveMethodDependencies($method, $requestParams);
-
 		$ret = $method->invokeArgs($controller, $args);
 
 		return $this->sendResponse($ret);
