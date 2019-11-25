@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Jupitern\Slim3\Handlers\Error;
 use Jupitern\Slim3\Handlers\PhpError;
 use Jupitern\Slim3\Handlers\NotFound;
-use Lib\Utils\DotNotation;
+use Jupitern\Slim3\Utils\DotNotation;
 
 class App
 {
@@ -32,13 +32,14 @@ class App
 	{
         $this->appName = $appName;
         $this->configs = $configs;
-        $this->slim = new \Slim\App($configs['slim']);
-        $this->env = $configs['env'];
-        $container = $this->getContainer();
-        $displayErrorDetails = $configs['debug'];
 
-        date_default_timezone_set($configs['timezone']);
-        \Locale::setDefault($configs['locale']);
+        $this->slim = new \Slim\App($this->configs['slim']);
+        $this->env = $this->configs['env'];
+        $container = $this->getContainer();
+        $displayErrorDetails = $this->configs['debug'];
+
+        date_default_timezone_set($this->configs['timezone']);
+        \Locale::setDefault($this->configs['locale']);
 
 		set_error_handler(function($errno, $errstr, $errfile, $errline) {
 			if (!($errno & error_reporting())) {
@@ -55,10 +56,6 @@ class App
                 $handler(app()->resolve("request"), app()->resolve("response"), $throwable);
             }
         });
-
-        // TODO comment this lines
-		$container[RequestInterface::class] = $container['request'];
-		$container[ResponseInterface::class] = $container['response'];
 
 		$container['errorHandler'] = function() use($displayErrorDetails) {
 			return new Error($displayErrorDetails);
@@ -283,7 +280,7 @@ class App
     /**
      * resolve and call a given class / method
      *
-     * @param array $classMethod        [ClassNamespace, method]
+     * @param callable|array $classMethod        [ClassNamespace, method]
      * @param array $requestParams      params from url
      * @param bool $useReflection
      * @return \Psr\Http\Message\ResponseInterface
@@ -296,9 +293,12 @@ class App
             $methodName = $classMethod[1];
 
             if (!$useReflection) {
-                $controller = new $className;
+                if (class_exists($className)) {
+                    $controller = new $className;
+                } else {
+                    return $this->notFound();
+                }
                 $method = new \ReflectionMethod($controller, $methodName);
-
             } else {
                 // adicional code to inject dependencies in controller class constructor
                 $class = new \ReflectionClass($className);
@@ -314,9 +314,7 @@ class App
 
 		} catch (\ReflectionException $e) {
 			return $this->notFound();
-		} catch (\Error $e) {
-            return $this->notFound();
-        }
+		}
 
 		$args = $this->resolveMethodDependencies($method, $requestParams);
 		$ret = $method->invokeArgs($controller, $args);

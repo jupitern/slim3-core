@@ -25,7 +25,7 @@ final class PhpError extends \Slim\Handlers\PhpError
 
         // Log the message
         $msg = $error->getMessage() .PHP_EOL. $error->getFile() .PHP_EOL. "on line ". $error->getLine();
-        $trace = preg_split('/\r\n|\r|\n/', PHP_EOL, $exception->getTraceAsString());
+        $trace = preg_split('/\r\n|\r|\n/', $error->getTraceAsString());
 
         $app->resolve(LoggerInterface::class)->error($msg,[
             "trace"   => implode(PHP_EOL, array_slice($trace, 0, 10)),

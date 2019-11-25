@@ -28,6 +28,14 @@ final class Error extends \Slim\Handlers\Error
         $msg = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
         $trace = preg_split('/\r\n|\r|\n/', $exception->getTraceAsString());
 
+        $catchable = null;
+        if ($exception instanceof NestedValidationException) {
+            $catchable = [
+                "error" => "Input data validation failed",
+                "reason" => $this->displayErrorDetails ? $exception->getMessages(): []
+            ];
+        }
+
         $app->resolve(LoggerInterface::class)->error($msg, [
             "trace"   => implode(PHP_EOL, array_slice($trace, 0, 10)),
             "server"  => gethostname(),
@@ -40,6 +48,7 @@ final class Error extends \Slim\Handlers\Error
                 "body"   => $request->getBody(),
                 "server" => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"]))
             ],
+            "catchable" => $catchable
         ]);
 
         if (app()->has('slashtrace') && $app->isConsole()) {
@@ -49,10 +58,7 @@ final class Error extends \Slim\Handlers\Error
         }
 
         if ($exception instanceof NestedValidationException) {
-            return app()->error([
-                "error" => "Input data validation failed",
-                "reason" => $this->displayErrorDetails ? $exception->getMessages(): []
-            ], 422);
+            return app()->error($catchable, 422);
         }
 
         if (!$this->displayErrorDetails) {
