@@ -202,7 +202,7 @@ class App
     public function __get($name)
 	{
         if (property_exists($this,$name)) {
-            $this->slim->{$name} = $value;
+            return $this->slim->{$name};
         } else {
             $c = $this->getContainer();
 
