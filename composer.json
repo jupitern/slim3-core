@@ -20,9 +20,6 @@
         "monolog/monolog": "2.0.*",
         "slashtrace/slashtrace": "1.1.*"
     },
-    "require-dev": {
-        "dg/composer-cleaner": "2.1.*"
-    },
     "autoload": {
         "psr-4": {
             "Jupitern\\Slim3\\": "src/"
