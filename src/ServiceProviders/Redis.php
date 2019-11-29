@@ -1,7 +1,6 @@
 <?php
 
 namespace Jupitern\Slim3\ServiceProviders;
-use Jupitern\Slim3\ServiceProviders\ProviderInterface;
 use Jupitern\Slim3\Utils\Redis as RedisClient;
 use Predis\Client;
 

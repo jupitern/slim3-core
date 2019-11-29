@@ -202,7 +202,7 @@ class App
     public function __get($name)
 	{
         if (property_exists($this,$name)) {
-            $this->slim->{$name} = $value;
+            return $this->slim->{$name};
         } else {
             $c = $this->getContainer();
 
@@ -435,25 +435,25 @@ class App
      */
     function error($msg, $code = 500)
     {
+        if (is_string($msg)) {
+            $msg = ["code" => $code, "error" => $msg, "messages" => []];
+        }
+
         if ($this->isConsole()) {
             return $this->resolve('response')
                 ->withStatus($code)
                 ->withHeader('Content-type', 'text/plain')
-                ->write($msg);
+                ->write($msg['error'].PHP_EOL.implode(PHP_EOL, $msg['messages']));
         }
 
         if ($this->resolve('request')->getHeaderLine('Accept') == 'application/json') {
-            if ($code == 422 && !is_array($msg)) {
-                $msg = [$msg];
-            }
-
             return $this->resolve('response')
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus($code)
                 ->withJson($msg);
         }
 
-        $resp = $this->resolve('view')->render('http::error', ['code' => $code, 'message' => $msg]);
+        $resp = $this->resolve('view')->render('http::error', ['error' => $msg]);
 
         return $this->resolve('response')
             ->withStatus($code)

@@ -1,7 +1,6 @@
 <?php
 
 namespace Jupitern\Slim3\Handlers;
-
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
@@ -25,44 +24,36 @@ final class Error extends \Slim\Handlers\Error
         $container = $app->getContainer();
 
         // Log the message
+        $errorCode = $exception instanceof NestedValidationException ? 422 : 500;
         $msg = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
-        $trace = preg_split('/\r\n|\r|\n/', $exception->getTraceAsString());
+        $messages = $errorCode == 422 ? $exception->getMessages() :
+            (app()->isConsole() || $this->displayErrorDetails ? array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10) : []);
 
-        $catchable = null;
-        if ($exception instanceof NestedValidationException) {
-            $catchable = [
-                "error" => "Input data validation failed",
-                "reason" => $this->displayErrorDetails ? $exception->getMessages(): []
-            ];
-        }
+        $errorMsg = ["code" => $errorCode, "error" => $msg, "messages" => $messages];
 
         $app->resolve(LoggerInterface::class)->error($msg, [
-            "trace"   => implode(PHP_EOL, array_slice($trace, 0, 10)),
-            "server"  => gethostname(),
-            "user"    => array_key_exists('user', $container) ? [
-                "id" => $container["user"]->id,
+            "error"     => $errorMsg['error'],
+            "messages"  => implode(PHP_EOL, $errorMsg['messages']),
+            "server"    => gethostname(),
+            "user"      => array_key_exists('user', $container) ? [
+                "id"    => $container["user"]->id,
                 "username" => $container["user"]->username,
             ] : "null",
             "request" => [
                 "query"  => $request->getQueryParams(),
                 "body"   => $request->getBody(),
                 "server" => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"]))
-            ],
-            "catchable" => $catchable
+            ]
         ]);
 
-        if (app()->has('slashtrace') && $app->isConsole()) {
+        if (app()->has('slashtrace') && (app()->isConsole() || $this->displayErrorDetails)) {
             app()->resolve('slashtrace')->register();
-            http_response_code(500);
+            http_response_code($errorCode);
             throw $exception;
         }
 
-        if ($exception instanceof NestedValidationException) {
-            return app()->error($catchable, 422);
-        }
-
-        if (!$this->displayErrorDetails) {
-            return app()->error($exception->getMessage(), 500);
+        if (app()->isConsole() || !$this->displayErrorDetails) {
+            return app()->error($errorMsg, $errorCode);
         }
 
         return parent::__invoke($request, $response, $exception);

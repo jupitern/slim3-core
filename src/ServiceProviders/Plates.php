@@ -1,7 +1,6 @@
 <?php
 
 namespace Jupitern\Slim3\ServiceProviders;
-use Jupitern\Slim3\ServiceProviders\ProviderInterface;
 use League\Plates\Engine;
 
 class Plates implements ProviderInterface

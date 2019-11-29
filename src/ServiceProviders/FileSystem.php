@@ -1,7 +1,6 @@
 <?php
 
 namespace Jupitern\Slim3\ServiceProviders;
-use Jupitern\Slim3\ServiceProviders\ProviderInterface;
 use League\Flysystem\Filesystem as FlySystem;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Adapter\Ftp as FtpAdapter;

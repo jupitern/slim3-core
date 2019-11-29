@@ -1,7 +1,6 @@
 <?php
 
 namespace Jupitern\Slim3\Handlers;
-
 use Jupitern\Slim3\App;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
