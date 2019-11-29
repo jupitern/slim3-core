@@ -10,11 +10,11 @@ final class Error extends \Slim\Handlers\Error
 {
 
     /**
-     * @param \Psr\Http\Message\ServerRequestInterface $request
-     * @param \Psr\Http\Message\ResponseInterface      $response
-     * @param \Exception                               $exception
+     * @param Request       $request
+     * @param Response      $response
+     * @param \Exception    $exception
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return Response
      * @throws \ReflectionException
      * @throws \Exception
      */

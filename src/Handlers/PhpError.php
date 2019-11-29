@@ -9,11 +9,11 @@ final class PhpError extends \Slim\Handlers\PhpError
 {
 
 	/**
-	 * @param \Psr\Http\Message\ServerRequestInterface $request
-	 * @param \Psr\Http\Message\ResponseInterface      $response
-	 * @param \Throwable                               $error
+	 * @param Request       $request
+	 * @param Response      $response
+	 * @param \Throwable    $error
 	 *
-	 * @return \Psr\Http\Message\ResponseInterface
+	 * @return Response
 	 * @throws \ReflectionException
 	 * @throws \Throwable
 	 */
