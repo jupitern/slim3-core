@@ -25,15 +25,12 @@ final class Error extends \Slim\Handlers\Error
 
         // Log the message
         $errorCode = $exception instanceof NestedValidationException ? 422 : 500;
-        $msg = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
-        $messages = $errorCode == 422 ? $exception->getMessages() :
-            (app()->isConsole() || $this->displayErrorDetails ? array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10) : []);
+        $errorMsg  = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
+        $stackTrace = $errorCode == 422 ? $exception->getMessages() : array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10);
 
-        $errorMsg = ["code" => $errorCode, "error" => $msg, "messages" => $messages];
-
-        $app->resolve(LoggerInterface::class)->error($msg, [
-            "error"     => $errorMsg['error'],
-            "messages"  => implode(PHP_EOL, $errorMsg['messages']),
+        $app->resolve(LoggerInterface::class)->error($errorMsg, [
+            "error"     => $errorMsg,
+            "messages"  => implode(PHP_EOL, $stackTrace),
             "server"    => gethostname(),
             "user"      => array_key_exists('user', $container) ? [
                 "id"    => $container["user"]->id,
@@ -45,6 +42,17 @@ final class Error extends \Slim\Handlers\Error
                 "server" => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"]))
             ]
         ]);
+
+        $errorMsg = [
+            "code" => $errorCode,
+            "error" => $this->displayErrorDetails ? $errorMsg : "Error",
+            "messages" => $errorCode == 422 || $this->displayErrorDetails ? $stackTrace : [],
+        ];
+
+        if ($errorCode === 422) {
+            $errorMsg["error"] = "Input data validation failed";
+            return app()->error($errorMsg, $errorCode);
+        }
 
         if (app()->has('slashtrace') && (app()->isConsole() || $this->displayErrorDetails)) {
             app()->resolve('slashtrace')->register();
