@@ -10,30 +10,24 @@ final class Logger
     /**
      * Private constructor so nobody else can instantiate it
      */
-    private function __construct()
+    public function __construct()
     {
         $this->startTime = microtime(true);
     }
 
+
     /**
+     * add a message to log
+     *
+     * @param mixed $message
      * @return Logger
      */
-    public static function instance()
+    public function add($message): Logger
     {
-        static $inst = null;
-        if ($inst === null) {
-            $inst = new Logger();
+        if (is_object($message) || is_array($message)) {
+            $message = json_encode($message);
         }
-        return $inst;
-    }
 
-
-    /**
-     * @param string $message
-     * @return Logger
-     */
-    public function add(string $message): Logger
-    {
         $this->entries[] = (object)[
             'time' => round(microtime(true) - $this->startTime, 2),
             'message' => $message
@@ -44,6 +38,8 @@ final class Logger
 
 
     /**
+     * get logs as array
+     *
      * @return array
      */
     public function get(): array
@@ -53,21 +49,34 @@ final class Logger
 
 
     /**
+     * get logs as a string
+     *
      * @param bool $displayTime
+     * @param string $lineBreak
      * @return string
      */
-    public function getAsString(bool $displayTime = true): string
+    public function getAsString(bool $displayTime = true, string $lineBreak = PHP_EOL): string
     {
         $str = "";
         foreach ($this->entries as $entry) {
             if ($displayTime) {
-                $str .= "{$entry->time}s => {$entry->message}".PHP_EOL;
+                $str .= "{$entry->time}s => {$entry->message}".$lineBreak;
             } else {
-                $str .= $entry->message .PHP_EOL;
+                $str .= $entry->message .$lineBreak;
             }
         }
 
         return $str;
+    }
+
+
+    /**
+     * clear logs
+     */
+    public function clear()
+    {
+        $this->startTime = microtime(true);
+        $this->entries = [];
     }
 
 }
