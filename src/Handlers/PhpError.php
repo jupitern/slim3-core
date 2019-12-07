@@ -29,7 +29,7 @@ final class PhpError extends \Slim\Handlers\PhpError
         $errorMsg  = $error->getMessage() .PHP_EOL. $error->getFile() .PHP_EOL. "on line ". $error->getLine();
         $stackTrace = array_slice(preg_split('/\r\n|\r|\n/', $error->getTraceAsString()), 0, 10);
 
-        $app->resolve(LoggerInterface::class)->error($errorMsg, [
+        $app->resolve('logger')->error($errorMsg, [
             "error"     => $errorMsg,
             "messages"  => implode(PHP_EOL, $stackTrace),
             "server"    => gethostname(),

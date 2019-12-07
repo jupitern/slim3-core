@@ -29,7 +29,7 @@ final class Error extends \Slim\Handlers\Error
         $errorMsg  = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
         $stackTrace = $errorCode == 422 ? $exception->getMessages() : array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10);
 
-        $app->resolve(LoggerInterface::class)->error($errorMsg, [
+        $app->resolve('logger')->error($errorMsg, [
             "error"     => $errorMsg,
             "messages"  => implode(PHP_EOL, $stackTrace),
             "server"    => gethostname(),
