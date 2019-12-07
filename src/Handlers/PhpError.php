@@ -21,8 +21,7 @@ final class PhpError extends \Slim\Handlers\PhpError
 	public function __invoke(Request $request, Response $response, \Throwable $error)
     {
         $app        = app();
-        $container  = $app->getContainer();
-        $user       = $container->has('user') ? $container->get('user') : null;
+        $user = $app->has('user') ? $app->resolve('user') : null;
 
         // Log the message
         $errorCode = 500;
@@ -37,7 +36,7 @@ final class PhpError extends \Slim\Handlers\PhpError
                 "user"      => $user !== null ? ["id" => $user->id, "username" => $user->username] : "null",
                 "request" => [
                     "query" => $request->getQueryParams(),
-                    "body" => $request->getBody(),
+                    "body"  => $request->getBody(),
                     "server" => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"]))
                 ]
             ]);
