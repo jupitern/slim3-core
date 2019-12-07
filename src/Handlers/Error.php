@@ -21,7 +21,8 @@ final class Error extends \Slim\Handlers\Error
     public function __invoke(Request $request, Response $response, \Exception $exception)
     {
         $app  = app();
-        $user = $app->getContainer()->get('user');
+        $container  = $app->getContainer();
+        $user       = $container->has('user') ? $container->get('user') : null;
 
         // Log the message
         $errorCode = $exception instanceof NestedValidationException ? 422 : 500;

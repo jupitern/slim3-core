@@ -20,8 +20,9 @@ final class PhpError extends \Slim\Handlers\PhpError
 	 */
 	public function __invoke(Request $request, Response $response, \Throwable $error)
     {
-        $app  = app();
-        $user = $app->getContainer()->get('user');
+        $app        = app();
+        $container  = $app->getContainer();
+        $user       = $container->has('user') ? $container->get('user') : null;
 
         // Log the message
         $errorCode = 500;
