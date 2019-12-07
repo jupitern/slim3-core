@@ -20,8 +20,8 @@ final class PhpError extends \Slim\Handlers\PhpError
 	 */
 	public function __invoke(Request $request, Response $response, \Throwable $error)
     {
-        $app       = app();
-        $container = $app->getContainer();
+        $app  = app();
+        $user = $app->getContainer()->get('user');
 
         // Log the message
         $errorCode = 500;
@@ -32,10 +32,7 @@ final class PhpError extends \Slim\Handlers\PhpError
             "error"     => $errorMsg,
             "messages"  => implode(PHP_EOL, $stackTrace),
             "server"    => gethostname(),
-            "user"      => array_key_exists('user', $container) ? [
-                "id"    => $container["user"]->id,
-                "username" => $container["user"]->username,
-            ] : "null",
+            "user"      => $user !== null ? ["id" => $user->id, "username" => $user->username] : "null",
             "request" => [
                 "query"  => $request->getQueryParams(),
                 "body"   => $request->getBody(),
