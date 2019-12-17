@@ -8,6 +8,7 @@ class Command
     public function __construct()
     {
         if (app()->getConfig('consoleOutput')) {
+            ob_implicit_flush();
             ob_end_flush();
         }
     }
