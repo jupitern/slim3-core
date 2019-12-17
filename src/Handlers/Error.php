@@ -20,28 +20,27 @@ final class Error extends \Slim\Handlers\Error
      */
     public function __invoke(Request $request, Response $response, \Exception $exception)
     {
-        $app       = app();
-        $container = $app->getContainer();
+        $app  = app();
+        $user = $app->has('user') ? $app->resolve('user') : null;
 
         // Log the message
         $errorCode = $exception instanceof NestedValidationException ? 422 : 500;
         $errorMsg  = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
         $stackTrace = $errorCode == 422 ? $exception->getMessages() : array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10);
 
-        $app->resolve(LoggerInterface::class)->error($errorMsg, [
-            "error"     => $errorMsg,
-            "messages"  => implode(PHP_EOL, $stackTrace),
-            "server"    => gethostname(),
-            "user"      => array_key_exists('user', $container) ? [
-                "id"    => $container["user"]->id,
-                "username" => $container["user"]->username,
-            ] : "null",
-            "request" => [
-                "query"  => $request->getQueryParams(),
-                "body"   => $request->getBody(),
-                "server" => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"]))
-            ]
-        ]);
+        if ($app->has('logger')) {
+            $app->resolve('logger')->error($errorMsg, [
+                "error"     => $errorMsg,
+                "messages"  => implode(PHP_EOL, $stackTrace),
+                "server"    => gethostname(),
+                "user"      => $user !== null ? ["id" => $user->id, "username" => $user->username] : "null",
+                "request" => [
+                    "query"  => $request->getQueryParams(),
+                    "body"   => $request->getBody(),
+                    "server" => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"]))
+                ]
+            ]);
+        }
 
         $errorMsg = [
             "code" => $errorCode,
