@@ -7,6 +7,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Processor\WebProcessor;
 use Monolog\Handler\SISHandler;
+use Monolog\Handler\SyslogUdpHandler;
 
 class Monolog implements ProviderInterface
 {
