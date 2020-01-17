@@ -22,9 +22,17 @@ class Monolog implements ProviderInterface
                 $handler = new SISHandler($logger['host'], $logger['apiKey'], $logger['level']);
                 $monolog->pushHandler($handler);
                 $monolog->pushProcessor(new WebProcessor());
-            }
-            elseif ($logger['type'] == 'file' && (bool)$logger['enabled']) {
+            
+            } elseif ($logger['type'] == 'file' && (bool)$logger['enabled']) {
                 $handler = new StreamHandler($logger['path'], $logger['level']);
+                $handler->setFormatter($formatter);
+                $monolog->pushHandler($handler);
+            
+            } elseif ($logger['type'] == 'papertrail' && (bool)$logger['enabled']) {
+                $output = "%channel%.%level_name%: %message%";
+                $formatter = new LineFormatter($output);
+
+                $handler = new SyslogUdpHandler("logs2.papertrailapp.com", 28536);
                 $handler->setFormatter($formatter);
                 $monolog->pushHandler($handler);
             }
