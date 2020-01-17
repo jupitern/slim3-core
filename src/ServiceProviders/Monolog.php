@@ -12,7 +12,7 @@ use Monolog\Handler\SyslogUdpHandler;
 class Monolog implements ProviderInterface
 {
 
-	public static function register($serviceName, array $settings = [])
+    public static function register($serviceName, array $settings = [])
     {
         $monolog = new Logger($serviceName);
         $formatter = new LineFormatter(null, null, true);
@@ -39,7 +39,7 @@ class Monolog implements ProviderInterface
             }
         }
 
-		app()->getContainer()[LoggerInterface::class] = $monolog;
+	app()->getContainer()['logger'] = $monolog;
     }
 
 }
