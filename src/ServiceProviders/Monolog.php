@@ -33,7 +33,7 @@ class Monolog implements ProviderInterface
                 $output = "%channel%.%level_name%: %message%";
                 $formatter = new LineFormatter($output);
 
-                $handler = new SyslogUdpHandler("logs2.papertrailapp.com", 28536);
+                $handler = new SyslogUdpHandler($logger['host'], $logger['port']);
                 $handler->setFormatter($formatter);
                 $monolog->pushHandler($handler);
             }
