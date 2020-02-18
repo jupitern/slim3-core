@@ -5,9 +5,11 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Processor\WebProcessor;
-use Monolog\Handler\SISHandler;
+use Jupitern\Slim3\Monolog\Handler\SisHandler;
+use Jupitern\Slim3\Monolog\Handler\LogdnaHandler;
+use Jupitern\Slim3\Monolog\LogdnaFormatter;
+use Jupitern\Slim3\Monolog\Handler\TelegramHandler;
 use Monolog\Handler\SyslogUdpHandler;
-use Monolog\Handler\DataDogHandler;
 
 class Monolog implements ProviderInterface
 {
@@ -15,8 +17,6 @@ class Monolog implements ProviderInterface
     public static function register($serviceName, array $settings = [])
     {
         $monolog = new Logger($serviceName);
-        $formatter = new LineFormatter(null, null, true);
-        $formatter->includeStacktraces(false);
 
         foreach ($settings as $logger) {
 
@@ -29,9 +29,16 @@ class Monolog implements ProviderInterface
                 $monolog->pushHandler($handler);
             
             } elseif ($logger['type'] == 'sis' && (bool)$logger['enabled']) {
-                $handler = new SISHandler($logger['host'], $logger['apiKey'], $logger['level']);
+                $handler = new SisHandler($logger['host'], $logger['appKey']);
                 $monolog->pushHandler($handler);
-                $monolog->pushProcessor(new WebProcessor());
+            
+            } elseif ($logger['type'] == 'telegram' && (bool)$logger['enabled']) {
+                $handler = new TelegramHandler($logger['apiKey'], $logger['chatId'], $logger['level']);
+                $monolog->pushHandler($handler);
+
+            } elseif ($logger['type'] == 'logdna' && (bool)$logger['enabled']) {
+                $handler = new LogdnaHandler($logger['ingestionKey'], $logger['level']);
+                $monolog->pushHandler($handler);
             
             } elseif ($logger['type'] == 'papertrail' && (bool)$logger['enabled']) {
                 $output = "%channel%.%level_name%: %message%";
@@ -41,10 +48,6 @@ class Monolog implements ProviderInterface
                 $handler->setFormatter($formatter);
                 $monolog->pushHandler($handler);
 
-            } elseif ($logger['type'] == 'datadog' && (bool)$logger['enabled']) {
-                $handler = new DataDogHandler($logger['host'], $logger['apiKey'], $logger['appKey'], $logger['level']);
-                $monolog->pushHandler($handler);
-            
             }
         }
 

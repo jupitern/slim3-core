@@ -20,25 +20,29 @@ final class Error extends \Slim\Handlers\Error
      */
     public function __invoke(Request $request, Response $response, \Exception $exception)
     {
-        $app  = app();
-        $user = $app->has('user') ? $app->resolve('user') : null;
+        $app = app();
+
+        $userInfo = [];
+        if ($app->has('user')) {
+            $user = $app->resolve('user');
+            $userInfo = [
+                "id" => is_object($user) ? $user->id ?? $user->UserID ?? $user->userid ?? null : null,
+                "username" => is_object($user) ? $user->username ?? $user->Username ?? null : null,
+            ];
+        }
 
         // Log the message
         $errorCode = $exception instanceof NestedValidationException ? 422 : 500;
-        $errorMsg  = $exception->getMessage() .PHP_EOL. $exception->getFile() .PHP_EOL. "on line ". $exception->getLine();
+        $errorMsg  = $exception->getMessage() ." on ".  $exception->getFile() ." line ". $exception->getLine();
         $stackTrace = $errorCode == 422 ? $exception->getMessages() : array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10);
 
         if ($app->has('logger')) {
             $app->resolve('logger')->error($errorMsg, [
-                "error"     => $errorMsg,
-                "messages"  => implode(PHP_EOL, $stackTrace),
-                "server"    => gethostname(),
-                "user"      => $user !== null ? ["id" => $user->id, "username" => $user->username] : "null",
-                "request" => [
-                    "query"  => $request->getQueryParams(),
-                    "body"   => $request->getBody(),
-                    "server" => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"]))
-                ]
+                "trace"     => $stackTrace,
+                "user"      => $userInfo,
+                "host"      => gethostname(),
+                "request"   => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"])),
+                // "query" => $request->getQueryParams(),
             ]);
         }
 

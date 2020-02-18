@@ -1,1 +1,14 @@
-﻿.idea
+﻿# temp files from editors
+*~
+*.bak
+.DS_Store
+Thumbs.db
+.buildpath
+.project
+.settings
+*.tmproj
+build
+.idea/
+nbproject/
+/vendor/
+/.history/

@@ -14,7 +14,7 @@
         "issues": "https://github.com/jupitern/slim3-core/issues"
     },
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.2",
         "slim/slim": "3.12.*",
         "psr/log": "1.1.*",
         "monolog/monolog": "2.0.*",
