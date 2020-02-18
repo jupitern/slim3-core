@@ -94,7 +94,7 @@ class LogdnaHandler extends \Monolog\Handler\AbstractProcessingHandler {
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
-        $result = \Monolog\Handler\Curl\Util::execute($ch, 5, false);
+        $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
         //debug($result, true);
     }
 

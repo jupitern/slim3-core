@@ -47,12 +47,17 @@ class SisHandler extends AbstractProcessingHandler
         \curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($record));
         \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        \curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        \curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        \curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+        \curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
 
-        $result = \Monolog\Handler\Curl\Util::execute($ch, 5, false);
-        //debug($result, true);
+        try {
+            $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
+            //debug($result, true);
+
+        } catch (\Exception $e) {
+            
+        }
     }
 
 }

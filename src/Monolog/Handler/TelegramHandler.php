@@ -65,8 +65,6 @@ class TelegramHandler extends AbstractProcessingHandler
 
         \curl_setopt($ch, CURLOPT_URL, $url);
         \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        \curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        \curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
         \curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
             'text'    => $message,
@@ -77,7 +75,7 @@ class TelegramHandler extends AbstractProcessingHandler
             \curl_setopt($ch, $option, $value);
         }
 
-        $result = \Monolog\Handler\Curl\Util::execute($ch, 5, false);
+        $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
         // debug($result, true);
     }
 
