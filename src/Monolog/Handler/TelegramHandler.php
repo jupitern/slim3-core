@@ -75,8 +75,10 @@ class TelegramHandler extends AbstractProcessingHandler
             \curl_setopt($ch, $option, $value);
         }
 
-        $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
-        // debug($result, true);
+        try {
+            $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
+            //debug($result, true);
+        } catch (\Exception $e) {}
     }
 
 

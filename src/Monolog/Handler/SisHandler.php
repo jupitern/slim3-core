@@ -48,16 +48,11 @@ class SisHandler extends AbstractProcessingHandler
         \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        \curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-        \curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
 
         try {
             $result = \Monolog\Handler\Curl\Util::execute($ch, 1, false);
             //debug($result, true);
-
-        } catch (\Exception $e) {
-            
-        }
+        } catch (\Exception $e) {}
     }
 
 }
