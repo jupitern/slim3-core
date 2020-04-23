@@ -23,12 +23,8 @@ class Redis
     }
 
 
-    public function get($key, $default = null)
+    public function get(string $key, $default = null)
     {
-        if (!is_string($key)) {
-            throw new \Exception("Provided key is not a legal string.");
-        }
-
         $item = $this->uncompress($this->client->get($this->canonicalize($key)));
 
         if (!empty($item)) {
@@ -39,48 +35,29 @@ class Redis
     }
 
 
-    public function set($key, $value, $ttl = null)
+    public function set(string $key, $value, $ttl = null)
     {
-        if (!is_string($key)) {
-            throw new \Exception("Provided key is not a legal string.");
-        }
-
         $value = $this->compress($value);
+        $key = $this->canonicalize($key);
 
         if ($ttl === null) {
-            return $this->client->set($this->canonicalize($key), $value) == 'OK';
+            return $this->client->set($key, $value) == 'OK';
         }
 
         if ($ttl instanceof \DateInterval) {
-            return $this
-                    ->client
-                    ->setex(
-                        $this->canonicalize($key),
-                        $ttl->s,
-                        $value
-                    ) == 'OK';
+            return $this->client->setex($key, $ttl->s, $value) == 'OK';
         }
 
         if (is_integer($ttl)) {
-            return $this
-                    ->client
-                    ->setex(
-                        $this->canonicalize($key),
-                        $ttl,
-                        $value
-                    ) == 'OK';
+            return $this->client->setex($key, $ttl, $value) == 'OK';
         }
 
         throw new \Exception("TTL must be an integer or an instance of \\DateInterval");
     }
 
 
-    public function delete($key)
+    public function delete(string $key)
     {
-        if (!is_string($key)) {
-            throw new \Exception("Provided key is not a legal string.");
-        }
-
         return $this->client->del($this->canonicalize($key)) == 1;
     }
 
@@ -307,7 +284,7 @@ LUA;
      * @param string $string String to be canonicalized
      * @return string Canonical string
      */
-    private function canonicalize($string)
+    private function canonicalize(string $string)
     {
         return str_replace(' ', '_', $string);
     }
