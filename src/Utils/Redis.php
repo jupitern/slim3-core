@@ -280,6 +280,8 @@ LUA;
      */
     private function compress($string)
     {
+        if (empty($string)) return $string;
+        
         return gzcompress(serialize($string));
     }
 
@@ -290,6 +292,8 @@ LUA;
      */
     private function uncompress($string)
     {
+        if (empty($string)) return $string;
+        
         return unserialize(gzuncompress($string));
     }
 
