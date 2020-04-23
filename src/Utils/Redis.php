@@ -275,26 +275,26 @@ LUA;
 
 
     /**
-     * @param $string
+     * @param mixed $value
      * @return string
      */
-    private function compress($string)
+    private function compress($value)
     {
-        if (empty($string)) return $string;
-        
-        return gzcompress(serialize($string));
+        if (is_string($value) && empty($value)) return $value;
+
+        return gzcompress(serialize($value));
     }
 
 
     /**
-     * @param $string
+     * @param mixed $value
      * @return mixed
      */
-    private function uncompress($string)
+    private function uncompress($value)
     {
-        if (empty($string)) return $string;
-        
-        return unserialize(gzuncompress($string));
+        if (is_string($value) && empty($value)) return $value;
+
+        return unserialize(gzuncompress($value));
     }
 
 
