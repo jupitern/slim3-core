@@ -41,7 +41,10 @@ final class Error extends \Slim\Handlers\Error
                 "trace"     => $stackTrace,
                 "user"      => $userInfo,
                 "host"      => gethostname(),
-                "request"   => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"])),
+                "request"   => array_intersect_key($request->getServerParams(), array_flip([
+                    "HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT",
+                    "REQUEST_METHOD", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"
+                ])),
                 // "query" => $request->getQueryParams(),
             ]);
         }

@@ -15,6 +15,7 @@
     },
     "require": {
         "php": ">=7.2",
+        "ext-zlib": "*",
         "slim/slim": "3.12.*",
         "psr/log": "1.1.*",
         "monolog/monolog": "2.0.*",
