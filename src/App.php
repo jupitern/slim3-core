@@ -6,6 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Jupitern\Slim3\Handlers\Error;
 use Jupitern\Slim3\Handlers\PhpError;
 use Jupitern\Slim3\Handlers\NotFound;
+use Jupitern\Slim3\Handlers\NotAllowed;
 use Jupitern\Slim3\Utils\DotNotation;
 
 class App
@@ -63,6 +64,9 @@ class App
 		$container['phpErrorHandler'] = function() use($displayErrorDetails) {
 			return new PhpError($displayErrorDetails);
 		};
+        $container['notAllowedHandler'] = function() use($displayErrorDetails) {
+            return new NotAllowed();
+        };
 		$container['notFoundHandler'] = function() {
 			return new NotFound();
 		};
