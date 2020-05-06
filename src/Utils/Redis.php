@@ -257,9 +257,9 @@ LUA;
      */
     private function compress($value)
     {
-        if (is_string($value) && empty($value)) return $value;
+        $value = serialize($value);
 
-        return gzcompress(serialize($value));
+        return strlen($value) == 0 ? $value : gzcompress($value);
     }
 
 
@@ -269,9 +269,9 @@ LUA;
      */
     private function uncompress($value)
     {
-        if (is_string($value) && empty($value)) return $value;
+        $value = strlen($value) == 0 ? $value : gzuncompress($value);
 
-        return unserialize(gzuncompress($value));
+        return unserialize($value);
     }
 
 
