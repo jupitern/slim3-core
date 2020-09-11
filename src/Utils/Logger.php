@@ -1,7 +1,7 @@
 <?php
 namespace Jupitern\Slim3\Utils;
 
-final class Logger
+class Logger
 {
 
     public $startTime;

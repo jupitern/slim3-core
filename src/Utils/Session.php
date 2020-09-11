@@ -2,7 +2,7 @@
 
 namespace Jupitern\Slim3\Utils;
 
-final class Session
+class Session
 {
 
 	/**
