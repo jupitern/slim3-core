@@ -9,7 +9,9 @@ class Command
     {
         if (app()->getConfig('consoleOutput')) {
             ob_implicit_flush();
-            ob_end_flush();
+            if (ob_get_length()) {
+                ob_end_flush();
+            }
         }
     }
 

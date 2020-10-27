@@ -5,7 +5,6 @@
     "authors": [
         {
             "name"    : "Nuno Chaves",
-            "email"   : "nunochaves@sapo.pt",
             "role"    : "Developer"
         }
     ],
@@ -18,7 +17,7 @@
         "ext-zlib": "*",
         "slim/slim": "3.12.*",
         "psr/log": "1.1.*",
-        "monolog/monolog": "2.0.*",
+        "monolog/monolog": "2.1.*",
         "slashtrace/slashtrace": "1.1.*"
     },
     "autoload": {
