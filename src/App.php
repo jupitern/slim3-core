@@ -441,6 +441,8 @@ class App
     {
         if (is_string($msg)) {
             $msg = ["code" => $code, "error" => $msg, "messages" => []];
+        } elseif (is_array($msg)) {
+            $msg = ["code" => $code, "error" => "Error", "messages" => $msg];
         }
 
         if ($this->isConsole()) {

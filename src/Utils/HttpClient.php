@@ -13,7 +13,7 @@ class HttpClient
     const PATCH = 'PATCH';
 
 
-    public static function request($method, $url, $urlParams = [], $headers = [], $options = [])
+    public static function request($method, $url, $urlParams = [], $headers = [], $options = [], $data = [])
     {
         if (!empty($urlParams)) {
             $url .= '?'.http_build_query($urlParams);
@@ -33,19 +33,19 @@ class HttpClient
                     $response = \Requests::head($url, $headers, $options);
                     break;
                 case self::POST:
-                    $response = \Requests::post($url, $headers, $options);
+                    $response = \Requests::post($url, $headers, $data, $options);
                     break;
                 case self::PUT:
-                    $response = \Requests::put($url, $headers, $options);
+                    $response = \Requests::put($url, $headers, $data, $options);
                     break;
                 case self::DELETE:
                     $response = \Requests::delete($url, $headers, $options);
                     break;
                 case self::OPTIONS:
-                    $response = \Requests::options($url, $headers, $options);
+                    $response = \Requests::options($url, $headers, $data, $options);
                     break;
                 case self::PATCH:
-                    $response = \Requests::patch($url, $headers, $options);
+                    $response = \Requests::patch($url, $headers, $data, $options);
                     break;
             }
         } catch (\Requests_Exception $e) {
