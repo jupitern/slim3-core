@@ -5,7 +5,7 @@ use League\Flysystem\Filesystem as FlySystem;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Adapter\Ftp as FtpAdapter;
 use Aws\S3\S3Client;
-use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
+use League\Flysystem\AwsS3v3\AwsS3Adapter;
 
 
 class FileSystem implements ProviderInterface
