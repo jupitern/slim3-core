@@ -1,11 +1,6 @@
 <?php
 
 namespace Jupitern\Slim3\ServiceProviders;
-use League\Flysystem\Filesystem as FlySystem;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Adapter\Ftp as FtpAdapter;
-use Aws\S3\S3Client;
-use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 
 
 class FileSystem implements ProviderInterface
@@ -21,13 +16,13 @@ class FileSystem implements ProviderInterface
                 $filesystem = null;
                 switch ($configs['driver']) {
                     case 'local':
-                        $adapter    = new Local($configs['root']);
-                        $filesystem = new FlySystem($adapter);
+                        $adapter    = new \League\Flysystem\Adapter\Local($configs['root']);
+                        $filesystem = new \League\Flysystem\Filesystem($adapter);
                         break;
 
                     case 'ftp':
-                        $adapter    = new FtpAdapter($configs);
-                        $filesystem = new FlySystem($adapter);
+                        $adapter    = new \League\Flysystem\Adapter\Ftp($configs);
+                        $filesystem = new \League\Flysystem\Filesystem($adapter);
                         break;
 
                     case 's3':
@@ -42,9 +37,23 @@ class FileSystem implements ProviderInterface
                             "region"      => $configs["region"],
                         ];
 
-                        $client = new S3Client($s3Configs);
-                        $adapter = new AwsS3V3Adapter($client, $configs["bucket"], $container);
-                        $filesystem = new FlySystem($adapter, ["visibility" => "public"]);
+                        $client     = new \Aws\S3\S3Client($s3Configs);
+                        $adapter    = new \League\Flysystem\AwsS3v3\AwsS3Adapter($client, $configs["bucket"], $container);
+                        $filesystem = new \League\Flysystem\Filesystem($adapter, ["visibility" => "public"]);
+                        break;
+
+                    case 's3Async':
+                        $container = $configs["containerPrefix"] . "/" . $configs["container"];
+
+                        $client = new \AsyncAws\S3\S3Client([
+                            'endpoint' => $configs["endpoint"],
+                            'accessKeyId' => $configs["key"],
+                            'accessKeySecret' => $configs["secret"],
+                            'pathStyleEndpoint' => true,
+                        ]);
+
+                        $adapter = new \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter($client, 'social-storage-staging');
+                        $filesystem = new \League\Flysystem\Filesystem($adapter);
 
                         break;
 
@@ -52,6 +61,7 @@ class FileSystem implements ProviderInterface
                         throw new \Exception("filesystem driver {$configs['driver']} not found");
                         break;
                 }
+
                 return $filesystem;
             };
         };
