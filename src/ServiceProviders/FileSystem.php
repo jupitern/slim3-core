@@ -5,7 +5,7 @@ use League\Flysystem\Filesystem as FlySystem;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Adapter\Ftp as FtpAdapter;
 use Aws\S3\S3Client;
-use League\Flysystem\AwsS3v3\AwsS3Adapter;
+use League\Flysystem\AwsS3v3\AwsS3V3Adapter;
 
 
 class FileSystem implements ProviderInterface
@@ -43,7 +43,7 @@ class FileSystem implements ProviderInterface
                         ];
 
                         $client     = new S3Client($s3Configs);
-                        $adapter    = new AwsS3Adapter($client, $configs["bucket"], $container);
+                        $adapter    = new AwsS3V3Adapter($client, $configs["bucket"], $container);
                         $filesystem = new FlySystem($adapter, ["visibility" => "public"]);
                         break;
 
