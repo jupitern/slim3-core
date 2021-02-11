@@ -25,23 +25,6 @@ class FileSystem implements ProviderInterface
                         $filesystem = new \League\Flysystem\Filesystem($adapter);
                         break;
 
-                    case 's3':
-                        $container = $configs["containerPrefix"] . "/" . $configs["container"];
-                        $s3Configs = [
-                            "endpoint"    => $configs["endpoint"],
-                            "version"     => $configs["version"],
-                            "credentials" => [
-                                "key"    => $configs["key"],
-                                "secret" => $configs["secret"]
-                            ],
-                            "region"      => $configs["region"],
-                        ];
-
-                        $client     = new \Aws\S3\S3Client($s3Configs);
-                        $adapter    = new \League\Flysystem\AwsS3v3\AwsS3Adapter($client, $configs["bucket"], $container);
-                        $filesystem = new \League\Flysystem\Filesystem($adapter, ["visibility" => "public"]);
-                        break;
-
                     case 's3Async':
                         $container = $configs["containerPrefix"] . "/" . $configs["container"];
 
