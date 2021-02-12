@@ -35,7 +35,7 @@ class FileSystem implements ProviderInterface
                             'pathStyleEndpoint' => true,
                         ]);
 
-                        $adapter = new \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter($client, 'social-storage-staging');
+                        $adapter = new \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter($client, $configs['bucket']);
                         $filesystem = new \League\Flysystem\Filesystem($adapter);
 
                         break;
