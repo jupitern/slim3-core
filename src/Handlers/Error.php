@@ -55,7 +55,7 @@ final class Error extends \Slim\Handlers\Error
             "messages" => $errorCode == 422 || $this->displayErrorDetails ? $stackTrace : [],
         ];
 
-        if ($errorCode === 422) {
+        if ($errorCode === 422 && !app()->isConsole()) {
             $errorMsg["error"] = "Input data validation failed";
             return app()->error($errorMsg, $errorCode);
         }
