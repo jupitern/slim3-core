@@ -60,4 +60,32 @@ class HttpClient
         ];
     }
 
+
+    public static function desktopVersion(string $url): string
+    {
+        // Mobile version of the link => desktop equivalent
+        $mobileVersions = [
+            "://mobile.twitter" => "://twitter",
+        ];
+
+        foreach ($mobileVersions as $mobile => $desktop) {
+            $url = str_replace($mobile, $desktop, $url);
+        }
+
+        return $url;
+    }
+
+
+    public static function removeTrackingQueryParams(string $url): string
+    {
+        foreach (self::$trackers as $key) {
+            $url = preg_replace('/(?:&|(\?))' . $key . '=[^&]*(?(1)&|)?/i', "$1", $url);
+            $url = rtrim($url, "?");
+            $url = rtrim($url, "&");
+            return $url;
+        }
+
+        return rtrim($url, "/");
+    }
+
 }
