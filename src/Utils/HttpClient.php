@@ -12,6 +12,38 @@ class HttpClient
     const OPTIONS = 'OPTIONS';
     const PATCH = 'PATCH';
 
+    protected static $trackers = [
+        "utm_source",
+        "utm_medium",
+        "utm_term",
+        "utm_campaign",
+        "utm_content",
+        "utm_name",
+        "utm_cid",
+        "utm_reader",
+        "utm_viz_id",
+        "utm_pubreferrer",
+        "utm_swu",
+        "gclid",
+        "icid",
+        "fbclid",
+        "_hsenc",
+        "_hsmi",
+        "mkt_tok",
+        "mc_cid",
+        "mc_eid",
+        "sr_share",
+        "vero_conv",
+        "vero_id",
+        "nr_email_referer",
+        "ncid",
+        "ref",
+        "gclsrc",
+        "_ga",
+        "s_kwcid",
+        "msclkid",
+    ];
+
 
     public static function request($method, $url, $urlParams = [], $headers = [], $options = [], $data = [])
     {
