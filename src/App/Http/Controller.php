@@ -16,4 +16,12 @@ class Controller
         $this->response = app()->response;
     }
 
+
+    public function getQueryParam($paramName, $defaultValue = null)
+    {
+        $params = $this->request->getQueryParams();
+
+        return isset($params[$paramName]) ? $params[$paramName] : $defaultValue;
+    }
+
 }
