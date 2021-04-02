@@ -20,11 +20,7 @@ final class NotFound extends \Slim\Handlers\NotFound
 			return $response->write("Error: request does not match any command::method or mandatory params are not properly set\n");
 		}
 
-        return app()->error([
-            "code" => 404,
-            "error" => "uri \"{$request->getUri()->getPath()}\" not found",
-            "messages" => []
-        ], 404);
+        return app()->error(404, "uri ". $request->getUri()->getPath() ." not found");
 	}
 
 

@@ -31,43 +31,49 @@ final class Error extends \Slim\Handlers\Error
             ];
         }
 
-        // Log the message
         $errorCode = $exception instanceof NestedValidationException ? 422 : 500;
         $errorMsg  = $exception->getMessage() ." on ".  $exception->getFile() ." line ". $exception->getLine();
-        $stackTrace = $errorCode == 422 ? $exception->getMessages() : array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10);
+        $messages  = $errorCode == 422 ? $exception->getMessages() : array_slice(preg_split('/\r\n|\r|\n/', $exception->getTraceAsString()), 0, 10);
 
+        // Log the message
         if ($app->has('logger')) {
             $app->resolve('logger')->error($errorMsg, [
-                "trace"     => $stackTrace,
+                "trace"     => $messages,
                 "user"      => $userInfo,
                 "host"      => gethostname(),
                 "request"   => array_intersect_key($request->getServerParams(), array_flip([
-                    "HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT",
-                    "REQUEST_METHOD", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"
+                    "HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH",
+                    "HTTP_USER_AGENT", "REQUEST_METHOD", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"
                 ])),
                 // "query" => $request->getQueryParams(),
             ]);
         }
 
-        $errorMsg = [
-            "code" => $errorCode,
-            "error" => $this->displayErrorDetails ? $errorMsg : "Error",
-            "messages" => $errorCode == 422 || $this->displayErrorDetails ? $stackTrace : [],
-        ];
+        if (app()->isConsole()) {
+            if (app()->has('slashtrace')) {
+                $slashtrace = app()->resolve('slashtrace');
+                $slashtrace->register();
+                $slashtrace->handleException($exception);
+                return $response->withStatus($errorCode);
+            }
 
-        if ($errorCode === 422 && !app()->isConsole()) {
-            $errorMsg["error"] = "Input data validation failed";
-            return app()->error($errorMsg, $errorCode);
+            return app()->consoleError($errorMsg, $messages);
         }
 
-        if (app()->has('slashtrace') && (app()->isConsole() || $this->displayErrorDetails)) {
-            app()->resolve('slashtrace')->register();
-            http_response_code($errorCode);
-            throw $exception;
+        if ($request->getHeaderLine('Accept') == 'application/json' || !$this->displayErrorDetails) {
+            if (!$this->displayErrorDetails) {
+                $errorMsg = "Ops. An error occurred";
+                $messages = [];
+            }
+
+            return app()->error($errorCode, $errorMsg, $messages);
         }
 
-        if (app()->isConsole() || !$this->displayErrorDetails) {
-            return app()->error($errorMsg, $errorCode);
+        if (app()->has('slashtrace')) {
+            $slashtrace = app()->resolve('slashtrace');
+            $slashtrace->register();
+            $slashtrace->handleException($exception);
+            return $response->withStatus($errorCode);
         }
 
         return parent::__invoke($request, $response, $exception);

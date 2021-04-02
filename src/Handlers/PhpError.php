@@ -31,35 +31,49 @@ final class PhpError extends \Slim\Handlers\PhpError
             ];
         }
 
+        $errorCode  = 500;
+        $errorMsg   = $error->getMessage() ." on ".  $error->getFile() ." line ". $error->getLine();
+        $messages   = array_slice(preg_split('/\r\n|\r|\n/', $error->getTraceAsString()), 0, 10);
+
         // Log the message
-        $errorCode = 500;
-        $errorMsg  = $error->getMessage() ." on ".  $error->getFile() ." line ". $error->getLine();
-        $stackTrace = array_slice(preg_split('/\r\n|\r|\n/', $error->getTraceAsString()), 0, 10);
-    
         if ($app->has('logger')) {
             $app->resolve('logger')->error($errorMsg, [
-                "trace"     => $stackTrace,
+                "trace"     => $messages,
                 "user"      => $userInfo,
                 "host"      => gethostname(),
-                "request"   => array_intersect_key($request->getServerParams(), array_flip(["HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH", "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"])),
+                "request"   => array_intersect_key($request->getServerParams(), array_flip([
+                    "HTTP_HOST", "SERVER_ADDR", "REMOTE_ADDR", "SERVER_PROTOCOL", "HTTP_CONTENT_LENGTH",
+                    "HTTP_USER_AGENT", "REQUEST_URI", "CONTENT_TYPE", "REQUEST_TIME_FLOAT"
+                ])),
                 // "query" => $request->getQueryParams(),
             ]);
         }
 
-        $errorMsg = [
-            "code" => $errorCode,
-            "error" => $this->displayErrorDetails ? $errorMsg : "Error",
-            "messages" => $this->displayErrorDetails ? $stackTrace : [],
-        ];
+        if (app()->isConsole()) {
+            if (app()->has('slashtrace')) {
+                $slashtrace = app()->resolve('slashtrace');
+                $slashtrace->register();
+                $slashtrace->handleException($error);
+                return $response->withStatus($errorCode);
+            }
 
-        if (app()->has('slashtrace') && (app()->isConsole() || $this->displayErrorDetails)) {
-            app()->resolve('slashtrace')->register();
-            http_response_code($errorCode);
-            throw $error;
+            return app()->consoleError($errorMsg, $messages);
         }
 
-        if (app()->isConsole() || !$this->displayErrorDetails) {
-            return app()->error($errorMsg, $errorCode);
+        if ($request->getHeaderLine('Accept') == 'application/json' || !$this->displayErrorDetails) {
+            if (!$this->displayErrorDetails) {
+                $errorMsg = "Ops. An error occurred";
+                $messages = [];
+            }
+
+            return app()->error($errorCode, $errorMsg, $messages);
+        }
+
+        if (app()->has('slashtrace')) {
+            $slashtrace = app()->resolve('slashtrace');
+            $slashtrace->register();
+            $slashtrace->handleException($error);
+            return $response->withStatus($errorCode);
         }
 
         return parent::__invoke($request, $response, $error);

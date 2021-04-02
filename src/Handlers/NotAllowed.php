@@ -20,11 +20,7 @@ final class NotAllowed extends \Slim\Handlers\NotFound
 			return $response->write("Error: request does not match any command::method or mandatory params are not properly set\n");
 		}
 
-        return app()->error([
-            "code" => 405,
-            "error" => "Method ".$request->getMethod()." not allowed for uri ".$request->getUri()->getPath(),
-            "messages" => []
-        ], 405);
+        return app()->error(405, "Method ".$request->getMethod()." not allowed for uri ". $request->getUri()->getPath() ." not found");
 	}
 
 
