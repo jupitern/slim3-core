@@ -24,7 +24,7 @@ class ValidateJson
             $json = json_decode($body);
 
             if (json_last_error() != JSON_ERROR_NONE || $json === null) {
-                return app()->error("Invalid request. Json message malformed", 422);
+                return app()->error(422, "Invalid request. Json message malformed");
             }
         }
 
