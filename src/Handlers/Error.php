@@ -61,7 +61,7 @@ final class Error extends \Slim\Handlers\Error
         }
 
         if ($request->getHeaderLine('Accept') == 'application/json' || !$this->displayErrorDetails) {
-            if (!$this->displayErrorDetails) {
+            if (!$this->displayErrorDetails && $errorCode != 422) {
                 $errorMsg = "Ops. An error occurred";
                 $messages = [];
             }
