@@ -2,7 +2,6 @@
 
 namespace Jupitern\Slim3\ServiceProviders;
 
-
 class FileSystem implements ProviderInterface
 {
 
@@ -10,18 +9,19 @@ class FileSystem implements ProviderInterface
     {
         app()->getContainer()[$serviceName] = function ($c) use($settings) {
             return function ($configsOverride = []) use($settings) {
-                
+
                 $configs = array_merge($settings, $configsOverride);
 
                 $filesystem = null;
                 switch ($configs['driver']) {
                     case 'local':
-                        $adapter    = new \League\Flysystem\Adapter\Local($configs['root']);
+                        $adapter    = new \League\Flysystem\Local\LocalFilesystemAdapter($configs['root']);
                         $filesystem = new \League\Flysystem\Filesystem($adapter);
                         break;
 
                     case 'ftp':
-                        $adapter    = new \League\Flysystem\Adapter\Ftp($configs);
+                        $ftpOptions = \League\Flysystem\Ftp\FtpConnectionOptions::fromArray($configs);
+                        $adapter    = new \League\Flysystem\Ftp\FtpAdapter($ftpOptions);
                         $filesystem = new \League\Flysystem\Filesystem($adapter);
                         break;
 
