@@ -1,6 +1,6 @@
 <?php
 
-namespace App\ServiceProviders;
+namespace Jupitern\Slim3\ServiceProviders;
 
 use Jupitern\Slim3\Filesystem\Filesystem as FilesystemFilesystem;
 use Jupitern\Slim3\ServiceProviders\ProviderInterface;
