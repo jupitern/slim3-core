@@ -12,6 +12,12 @@ class Plates implements ProviderInterface
         foreach ($settings['templates'] as $name => $path) {
             $engine->addFolder($name, $path, true);
         }
+        
+        if(array_key_exists('extensions', $settings)){
+            foreach($settings['extensions'] as $extension){
+                $engine->loadExtension(new $extension);
+            }
+        }
 
 		app()->getContainer()[$serviceName] = $engine;
 	}
