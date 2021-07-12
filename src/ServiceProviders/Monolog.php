@@ -51,7 +51,7 @@ class Monolog implements ProviderInterface
             }
         }
 
-	    app()->getContainer()['logger'] = $monolog;
+	    app()->getContainer()[$serviceName] = $monolog;
     }
 
 }
