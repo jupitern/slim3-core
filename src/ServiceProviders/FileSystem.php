@@ -6,7 +6,6 @@ use Jupitern\Slim3\Filesystem\Filesystem as FilesystemFilesystem;
 use Jupitern\Slim3\ServiceProviders\ProviderInterface;
 use Jupitern\Slim3\Filesystem\Filesystem as ExtendedFilesystem;
 use Jupitern\Slim3\Filesystem\S3\AsyncAwsS3Adapter;
-use Jupitern\Slim3\Filesystem\S3\ClientFactory;
 
 class Filesystem implements ProviderInterface
 {
@@ -41,14 +40,14 @@ class Filesystem implements ProviderInterface
         };
     }
 
-    private static function createLocal($configs)
+    public static function createLocal($configs)
     {
         $adapter = new \League\Flysystem\Local\LocalFilesystemAdapter($configs['root']);
 
         return new ExtendedFilesystem($adapter, [], null);
     }
 
-    private static function createFtp($configs)
+    public static function createFtp($configs)
     {
         $ftpOptions = \League\Flysystem\Ftp\FtpConnectionOptions::fromArray($configs);
         $adapter = new \League\Flysystem\Ftp\FtpAdapter($ftpOptions);
@@ -56,9 +55,15 @@ class Filesystem implements ProviderInterface
         return new ExtendedFilesystem($adapter, [], null);
     }
     
-    private static function createS3Async($settings)
+    public static function createS3Async($settings)
     {
-        $client = ClientFactory::create($settings);
+        $client = new \AsyncAws\SimpleS3\SimpleS3Client([
+            'endpoint'          => $settings['endpoint'],
+            'accessKeyId'       => $settings['key'],
+            'accessKeySecret'   => $settings['secret'],
+            'region'            => $settings['region'],
+            'pathStyleEndpoint' => true,
+        ]);
 
         $adapter = new AsyncAwsS3Adapter($client, $settings['bucket'], $settings['prefix'] ?? '', null, null);
 
