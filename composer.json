@@ -16,8 +16,8 @@
         "php": ">=7.2",
         "ext-zlib": "*",
         "slim/slim": "3.12.*",
-        "psr/log": "1.1.*",
-        "monolog/monolog": "2.1.*",
+        "psr/log": "3.0.*",
+        "monolog/monolog": "2.3.*",
         "slashtrace/slashtrace": "1.1.*"
     },
     "autoload": {
