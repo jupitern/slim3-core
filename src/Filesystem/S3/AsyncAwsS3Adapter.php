@@ -12,7 +12,7 @@ class AsyncAwsS3Adapter extends \League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter
     protected $bucket;
     protected $prefix;
     
-    private const EXTRA_METADATA_FIELDS = [
+    public const EXTRA_METADATA_FIELDS = [
         'Metadata',
         'StorageClass',
         'ETag',
