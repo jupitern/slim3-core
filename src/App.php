@@ -398,7 +398,7 @@ class App
             return $param->getDefaultValue();
         }
 
-        if (!$param->getClass()) {
+        if (!$param->getType()) {
             throw new \ReflectionException("Unable to resolve method param {$param->name}");
         }
 
